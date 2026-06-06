@@ -3,133 +3,95 @@
 #include <string>
 using namespace std;
 
-class Student {
+class Datchik {
     private:
-    int Id;
-    string Name;
-    int Age;
-    double AverageGrade;
-
+        //int id;
+        string roomName;
+        float curTemp;
+        float maxTemp;
     public:
-    Student(int newId, string newName, int newAge, double newAverageGrade):Id(newId), Name(newName), Age(newAge), AverageGrade(newAverageGrade) {
-        if (Id<0)
-        {
-            cout << "Некорректный айди. присвоен id=0";
-            Id=0;
+        void setRoomName(const string& newRoomName) {
+            if (newRoomName.empty()) 
+                roomName="Пусто";
+            cout << "Название комнаты изменено на " << roomName << endl; 
         }
 
-        if(Name.empty()) {
-            cout << "имя не введено";
-            Name="имя не введено";
+        void setMaxTemp(float newMaxTemp) {
+            if (newMaxTemp<0.0) {
+                cout << "температура не ниже нуля" << endl;
+                maxTemp=0.0;
+            }
+            else {
+                maxTemp=newMaxTemp;
+            }
         }
 
-        if (Age<0) {
-            cout << "\nВозраст введён некорректно.";
-            Age=0; // я не стал делать ограничение по 16, мало ли какой то вункирдырдыр поступит которому 10. 
+        void setTemperature(float newCurTemp) {
+            if(newCurTemp>maxTemp)
+                cout << "ПЕРЕГРЕВ" << endl;
+            curTemp=newCurTemp;
         }
 
-        if ((AverageGrade<2.0 or AverageGrade>5.0) and AverageGrade!=0.0) {
-            cout << "\nНекорректный средний балл.";
-            AverageGrade=0.0;
+        void print() const {
+            cout << "Комната: " << roomName << "; текущая температура: " << curTemp << "; максимальная температура: " << maxTemp << endl;
+            if(curTemp>maxTemp)
+                cout << "ПЕРЕГРЕВ\n";
         }
-    }
     
-    void setId(int newId) {
-        if (newId<0)
-        {
-            cout << "Некорректный айди. присвоен id=0";
-            Id=0;
+        string getRoomName() const {
+            return roomName;
         }
-        else {
-        Id=newId;
+
+        Datchik(string newRoomName, float newCurTemp, float newMaxTemp):roomName(newRoomName), curTemp(newCurTemp), maxTemp(newMaxTemp) {
+            setRoomName(newRoomName);
+            setMaxTemp(newMaxTemp);
+            setTemperature(newCurTemp);
         }
-        }
-    void setName(const string& newName) {
-         if(newName.empty()) {
-            cout << "имя не введено";
-            Name="имя не введено";
-        }
-        else {
-        Name=newName;
-        }
+    };
+
+    class Remote_Control {
+        private:
+            vector<Datchik> Datchik_List;
+        
+        public:
+            Remote_Control() {}
+
+            void addDatchik(const string& newRoomName, float newMaxTemp) {
+                Datchik_List.push_back(Datchik(newRoomName, 0.0, newMaxTemp)); 
+            }
+
+            void printAll() const {
+                for (const Datchik datchik:Datchik_List) 
+                    datchik.print();
+            }
+
+            void updateTemp(const string& infoRoomName, float newCurTemp) {
+                bool found=0;
+                for (Datchik& datchik:Datchik_List) {
+                    //ну это я могу через костыль сделать про датчик не найден.
+                    if(datchik.getRoomName()==infoRoomName) {
+                        datchik.setTemperature(newCurTemp);
+                        found=1;
+                    }
+                }
+                if (found==0)
+                    cout << "Датчик не найден";
+            }
+    };
+
+    int main()
+    {
+        Remote_Control rem1;
+
+        rem1.addDatchik("Серверная", 25.5);
+
+        rem1.addDatchik("Основной цех", 30.0);
+
+        rem1.addDatchik("Холодильник", 5.0);
+
+        rem1.updateTemp("Серверная", 22.0);
+
+        rem1.updateTemp("Холодильник", 8.5);
+
+        rem1.printAll();
     }
-
-    void setAge(int newAge) {
-        if (newAge<0)
-        {
-            cout << "Некорректный возраст";
-            Age=0;
-        }
-        else {
-            Age=newAge;
-        }
-    }
-    
-        void setGrade(double newAverageGrade) {
-         if((newAverageGrade<2.0 or newAverageGrade>5.0) and newAverageGrade!=0.0) {
-            cout << "некорренктно введён средний балл";
-            AverageGrade=0.0;
-        }
-        else {
-            AverageGrade=newAverageGrade;
-        }
-    }
-
-    void print() const {
-        cout << "ID: " << Id << " Name: " << Name << " Age: " << Age << " AverageGrade " << AverageGrade << endl;
-    }
-
-    string getName() const {
-        return Name;
-    }
-};
-
-class University {
-private:
-    vector<Student> students_list;
-public:
-    University() {}
-    
-    void addstudent(int id, const string& name, int age) {
-        students_list.push_back(Student(id, name, age, 0.0));
-    }
-
-    void printAllStudents() const {
-        for (const Student& student:students_list)
-        {
-            student.print();
-        }
-    }
-
-    void updateGradeFor(const string& needName, double newGrade) {
-        for (Student& student:students_list)
-        {
-            if (student.getName()==needName) {
-            student.setGrade(newGrade);
-        }
-    }
-    }
-};
-
-int main() {
-    // 1. Создаем университет. Внутри него сам по себе рождается пустой вектор.
-    University polytech;
-
-    // 2. Добавляем студентов. Метод addStudent сам создаст объекты класса Student.
-    // При создании у всех средний балл автоматически будет равен 0.0
-    polytech.addstudent(1, "Алексей", 19);
-    polytech.addstudent(2, "Мария", -5); // Специально проверяем защиту: возраст исправится на 0
-    polytech.addstudent(3, "Влад", 20);
-
-    // 3. Обновляем оценки студентам по их именам
-    polytech.updateGradeFor("Алексей", 4.8);
-    polytech.updateGradeFor("Мария", 3.9);
-    
-    // Специально проверяем защиту: ищем несуществующего студента
-    polytech.updateGradeFor("КтоТоЕще", 5.0); 
-
-    // 4. Выводим весь список студентов в терминал, чтобы увидеть финальный результат
-    polytech.printAllStudents();
-
-    return 0;
-}
