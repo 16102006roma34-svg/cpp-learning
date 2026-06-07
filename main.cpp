@@ -1,97 +1,65 @@
+#include <map>
 #include <iostream>
-#include <vector>
 #include <string>
+
 using namespace std;
 
-class Datchik {
-    private:
-        //int id;
-        string roomName;
-        float curTemp;
-        float maxTemp;
-    public:
-        void setRoomName(const string& newRoomName) {
-            if (newRoomName.empty()) 
-                roomName="Пусто";
-            cout << "Название комнаты изменено на " << roomName << endl; 
+
+class Translator {
+private: 
+    map <string, string> slovar;
+public:
+    void addTranslate(const string& keyword, const string& translate) {
+        auto it=slovar.find(keyword);
+
+        if (it!=slovar.end()) {
+            cout << "перевод слова " << keyword << " уже записан как " << it->second << endl;
+            cout << "Хотите заменить перевод? 1 - да, 0 - нет";
+            bool hochu;
+            cin >> hochu;
+            cin.ignore();
+            if (!hochu)
+                return;
         }
-
-        void setMaxTemp(float newMaxTemp) {
-            if (newMaxTemp<0.0) {
-                cout << "температура не ниже нуля" << endl;
-                maxTemp=0.0;
-            }
-            else {
-                maxTemp=newMaxTemp;
-            }
-        }
-
-        void setTemperature(float newCurTemp) {
-            if(newCurTemp>maxTemp)
-                cout << "ПЕРЕГРЕВ" << endl;
-            curTemp=newCurTemp;
-        }
-
-        void print() const {
-            cout << "Комната: " << roomName << "; текущая температура: " << curTemp << "; максимальная температура: " << maxTemp << endl;
-            if(curTemp>maxTemp)
-                cout << "ПЕРЕГРЕВ\n";
-        }
-    
-        string getRoomName() const {
-            return roomName;
-        }
-
-        Datchik(string newRoomName, float newCurTemp, float newMaxTemp):roomName(newRoomName), curTemp(newCurTemp), maxTemp(newMaxTemp) {
-            setRoomName(newRoomName);
-            setMaxTemp(newMaxTemp);
-            setTemperature(newCurTemp);
-        }
-    };
-
-    class Remote_Control {
-        private:
-            vector<Datchik> Datchik_List;
-        
-        public:
-            Remote_Control() {}
-
-            void addDatchik(const string& newRoomName, float newMaxTemp) {
-                Datchik_List.push_back(Datchik(newRoomName, 0.0, newMaxTemp)); 
-            }
-
-            void printAll() const {
-                for (const Datchik datchik:Datchik_List) 
-                    datchik.print();
-            }
-
-            void updateTemp(const string& infoRoomName, float newCurTemp) {
-                bool found=0;
-                for (Datchik& datchik:Datchik_List) {
-                    //ну это я могу через костыль сделать про датчик не найден.
-                    if(datchik.getRoomName()==infoRoomName) {
-                        datchik.setTemperature(newCurTemp);
-                        found=1;
-                    }
-                }
-                if (found==0)
-                    cout << "Датчик не найден";
-            }
-    };
-
-    int main()
-    {
-        Remote_Control rem1;
-
-        rem1.addDatchik("Серверная", 25.5);
-
-        rem1.addDatchik("Основной цех", 30.0);
-
-        rem1.addDatchik("Холодильник", 5.0);
-
-        rem1.updateTemp("Серверная", 22.0);
-
-        rem1.updateTemp("Холодильник", 8.5);
-
-        rem1.printAll();
+        slovar[keyword]=translate;
     }
+
+    void printTranslate(const string& keyword) const {
+        auto it=slovar.find(keyword);
+
+        if(it!=slovar.end()) {
+            cout << "Перевод слова " << keyword << ": " << it->second << endl;
+        }
+        else {
+            cout << "Слово " << keyword << " не найдено в словаре" << endl;
+        }
+    }
+
+    void printAll() const {
+        cout << "Полный словарь: " << endl ;
+        if (slovar.empty()) {
+            cout << "Словарь пуст!" << endl;
+            return;
+        }
+        for (const auto& [key, value] : slovar) {
+            cout <<  key << "->" << value << endl;
+        }
+    }
+};
+
+
+int main() {
+    Translator slovar;
+
+    slovar.addTranslate("apple", "яблоко");
+    slovar.addTranslate("banana","банан");
+    slovar.addTranslate("potato","картопля");
+
+    string keyword;
+
+    getline(cin, keyword);
+
+    slovar.printTranslate(keyword);
+
+    slovar.printAll();
+}
