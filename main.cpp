@@ -1,60 +1,79 @@
 #include <iostream> 
-#include <map>
-#include <string>
+#include <vector>
+#include <map> 
+#include <string> 
 using namespace std;
-class Product {
+
+class Courier {
     string name;
-    unsigned int quantity; 
+    bool isBusy;
+    vector <int> curOrders;
 
-    public:
-    Product(const string& newName, unsigned int newQuantity) : name(newName), quantity(newQuantity) {
+    public: 
+    Courier (string newName) : name(newName), isBusy(false) { // пустой вектор ж мжно так задать? 
+
     }
 
-    Product():name(""), quantity(0){}
-    
-    void changeQuantity(int amount) {
-        quantity+=amount;
-    }
+    Courier () : name(""), isBusy(false), curOrders() {}
 
     const string& getName () const {
-        return name; 
+        return name;
+    } 
+
+    bool getStatus () const{
+        return isBusy;
     }
 
-    unsigned int getQuantity() const {
-        return quantity;
+    void takeOrder(int orderId) {
+        curOrders.push_back(orderId);
+        isBusy=true;
     }
 
     void print() const {
-        cout << "Название товара: " << name << ". Количество на складе: " << quantity << endl;
-    }
-};
-
-class Warehouse {
-    map <unsigned int, Product> database;
-    int nextCode=101;
-    
-    public:
-    void addProduct(const string& newName, unsigned int newQuantity) {
-        database[nextCode++]=Product(newName, newQuantity);
-    }
-
-    bool updateStock(int barcode, unsigned int count) {
-        auto it=database.find(barcode);
-
-        if(it==database.end()) {
-            return false;
+        cout << "Данные о курьере: \n";
+        cout << "ФИО: " << name << "; Статус: ";
+        if (isBusy) {
+            cout << "занят; Список активных заказов: ";
+            for (int tempOrd:curOrders) {
+                cout << tempOrd << " ";
+            } 
         }
         else {
-            it->second.changeQuantity(count);
-            return true;
+            cout << "свободен";
         }
-    }
-
-    void printAll() const {
-        for (const auto & [barcode, product]:database) {
-            cout << "[" << barcode << "] ";
-            product.print();
-        }
+        cout << "." << endl;
     }
 };
 
+class LogisticSystem {
+    map <int, Courier> database;
+    int nextCourierId=1;
+    int nextOrderId=501;
+
+    public:
+    LogisticSystem() {};
+
+    void printReport() const {
+        for (const auto& [courierId, courier]:database) {
+            cout << "[" << courierId << "] ";
+            courier.print();
+        }
+    }
+
+    void registerCourier(const string& newName) {
+        Courier courier(newName);
+        database[nextCourierId++]=courier;
+    }
+
+    bool assignOrderToCourier(int courierId) {
+        auto it=database.find(courierId);
+
+        if(it==database.end()) {
+                return false;
+            }
+        else {
+            it->second.takeOrder(nextOrderId);
+            return true;
+            }
+        }
+}; 
