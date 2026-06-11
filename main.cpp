@@ -1,79 +1,83 @@
-#include <iostream> 
-#include <vector>
+#include <vector> 
 #include <map> 
-#include <string> 
+#include <iostream>
+#include <string>
 using namespace std;
 
-class Courier {
+class Server {
     string name;
-    bool isBusy;
-    vector <int> curOrders;
+    string ip;
+    vector <string> logs;
 
-    public: 
-    Courier (string newName) : name(newName), isBusy(false) { // пустой вектор ж мжно так задать? 
-
-    }
-
-    Courier () : name(""), isBusy(false), curOrders() {}
-
-    const string& getName () const {
+    public:
+    const string& getName() {
         return name;
-    } 
-
-    bool getStatus () const{
-        return isBusy;
     }
 
-    void takeOrder(int orderId) {
-        curOrders.push_back(orderId);
-        isBusy=true;
+    const string& getIp() {
+        return ip;
     }
 
-    void print() const {
-        cout << "Данные о курьере: \n";
-        cout << "ФИО: " << name << "; Статус: ";
-        if (isBusy) {
-            cout << "занят; Список активных заказов: ";
-            for (int tempOrd:curOrders) {
-                cout << tempOrd << " ";
-            } 
+    void addLog(const string& log) {
+        logs.push_back(log);
+    }
+
+    void printServer() const {
+        cout << "Название сервера: " << name << endl;
+        cout << "IP-адрес: " << ip << endl;
+        cout << "Список логов: " << endl;
+        for (const string& tempLog : logs) {
+            cout << tempLog << endl;
         }
+    }
+
+    Server(string newName, string newIp):name(newName), ip(newIp) {
+
+    }
+
+    Server() : name(""), ip("") {}
+};
+
+class ClusterManager {
+    unsigned int nextId=1;
+    map <unsigned int, Server> database;
+
+    public:
+    bool AddServer (const string& newName, const string& newIp) {
+        database[nextId++]=Server(newName, newIp);
+        return true;
+    }
+
+    bool addLogToServer(unsigned int serverId, const string& newLog) {
+        auto it=database.find(serverId);
+        if (it==database.end()) 
+            return false;
         else {
-            cout << "свободен";
+            it->second.addLog(newLog);
+            return true;
+        } 
+    }
+
+    void printReport() const {
+        for (const auto& [curId, server]:database) {
+            cout << "Все сервера:\n";
+            cout << "[" << curId << "] ";
+            server.printServer(); 
         }
-        cout << "." << endl;
     }
 };
 
-class LogisticSystem {
-    map <int, Courier> database;
-    int nextCourierId=1;
-    int nextOrderId=501;
+int main() {
+    ClusterManager manager;
+    Server server4("server4", "8.8.8.8");
+    Server server5("server5", "8.8.4.4");
+    Server server6("server6", "192.168.31.8");
+    string log1="абуагагагагагга";
+    
+    server4.addLog(log1);
+    server4.printServer();
 
-    public:
-    LogisticSystem() {};
-
-    void printReport() const {
-        for (const auto& [courierId, courier]:database) {
-            cout << "[" << courierId << "] ";
-            courier.print();
-        }
-    }
-
-    void registerCourier(const string& newName) {
-        Courier courier(newName);
-        database[nextCourierId++]=courier;
-    }
-
-    bool assignOrderToCourier(int courierId) {
-        auto it=database.find(courierId);
-
-        if(it==database.end()) {
-                return false;
-            }
-        else {
-            it->second.takeOrder(nextOrderId);
-            return true;
-            }
-        }
-}; 
+    manager.AddServer("server4", "4.4.4.4");
+    cout << manager.addLogToServer(1, log1) << endl; //ничего, что айди я просто выдумал? подразумевается же что раз надо добавить лог то программист айди сервера куда добавляем уже знает
+    cout << manager.addLogToServer(2, log1) << endl;
+}
