@@ -2,6 +2,7 @@
 #include <map> 
 #include <iostream>
 #include <string>
+#include <memory>
 using namespace std;
 
 class Server {
@@ -40,20 +41,21 @@ class Server {
 
 class ClusterManager {
     unsigned int nextId=1;
-    map <unsigned int, Server> database;
+    map <unsigned int, unique_ptr<Server>> database;
 
     public:
     bool AddServer (const string& newName, const string& newIp) {
-        database[nextId++]=Server(newName, newIp);
+        database[nextId++]=make_unique<Server>(newName, newIp);
         return true;
     }
+    
 
     bool addLogToServer(unsigned int serverId, const string& newLog) {
         auto it=database.find(serverId);
         if (it==database.end()) 
             return false;
         else {
-            it->second.addLog(newLog);
+            it->second->addLog(newLog);
             return true;
         } 
     }
@@ -62,7 +64,7 @@ class ClusterManager {
         for (const auto& [curId, server]:database) {
             cout << "Все сервера:\n";
             cout << "[" << curId << "] ";
-            server.printServer(); 
+            server->printServer(); 
         }
     }
 };
